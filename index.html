@@ -75,7 +75,7 @@
     }
 
     // Inizio Gioco Scacchi
-    function startChess() {
+   function startChess() {
         document.getElementById('dashboard').style.display = 'none';
         document.getElementById('game-container').style.display = 'flex';
         document.getElementById('player-name').innerText = nickname;
@@ -83,11 +83,13 @@
         const config = {
             draggable: true,
             position: 'start',
-            onDrop: onDrop
+            onDrop: onDrop,
+            
+            pieceTheme: 'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png'
         };
+        
         board = Chessboard('myBoard', config);
     }
-
     // Logica mosse e Bot semplice (mossa casuale)
     function onDrop(source, target) {
         let move = game.move({
