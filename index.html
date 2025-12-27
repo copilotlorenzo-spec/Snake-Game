@@ -2,26 +2,46 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Lollocraft Java Edition</title>
+    <title>Lollocraft - Java Edition</title>
     <style>
-        body { margin: 0; background: #1e1e1e; font-family: 'Courier New', monospace; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .launcher { background: rgba(0,0,0,0.9); padding: 30px; border: 4px solid #555; width: 350px; text-align: center; }
-        h1 { color: #55FF55; text-shadow: 2px 2px #000; font-size: 2.5em; }
+        body { margin: 0; background: #1a1a1a; font-family: 'Courier New', monospace; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .launcher { background: rgba(0,0,0,0.9); padding: 30px; border: 4px solid #555; width: 350px; text-align: center; box-shadow: 0 0 20px #000; }
+        h1 { color: #55FF55; text-shadow: 2px 2px #000; }
+        input { width: 80%; padding: 10px; margin: 10px 0; background: #000; border: 2px solid #555; color: #fff; text-align: center; font-size: 1.2em; }
         button { width: 100%; padding: 15px; margin: 10px 0; background: #3c8527; color: white; border: none; font-weight: bold; cursor: pointer; border-bottom: 4px solid #1a3d11; }
-        button:hover { background: #4caf50; }
-        #crosshair { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 20px; pointer-events: none; z-index: 100; display: none; }
         .hidden { display: none; }
+        #crosshair { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 24px; pointer-events: none; z-index: 100; display: none; }
     </style>
 </head>
 <body>
     <div id="crosshair">+</div>
-    <div id="ui" class="launcher">
+    <div id="login-screen" class="launcher">
         <h1>LOLLOCRAFT</h1>
-        <button onclick="start()">GIOCA (JAVA STYLE)</button>
+        <p>Inserisci il tuo codice a 6 cifre:</p>
+        <input type="password" id="user-code" maxlength="6" placeholder="000000">
+        <button onclick="accessWorlds()">ACCEDI AI MONDI</button>
     </div>
+
+    <div id="world-menu" class="launcher hidden">
+        <h1>I MIEI MONDI</h1>
+        <p id="welcome-msg"></p>
+        <button onclick="playWorld()">ENTRA NEL MONDO SALVATO</button>
+        <button style="background:#aa0000; border-bottom-color:#550000;" onclick="location.reload()">ESCI</button>
+    </div>
+
     <script>
-        function start() {
-            document.getElementById('ui').classList.add('hidden');
+        function accessWorlds() {
+            const code = document.getElementById('user-code').value;
+            if(code.length === 6) {
+                localStorage.setItem('lollocraft_auth', code);
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('world-menu').classList.remove('hidden');
+                document.getElementById('welcome-msg').innerText = "Codice: " + code;
+            } else { alert("Il codice deve essere di 6 cifre!"); }
+        }
+
+        function playWorld() {
+            document.getElementById('world-menu').classList.add('hidden');
             document.getElementById('crosshair').style.display = 'block';
             const s = document.createElement('script');
             s.type = 'module';
