@@ -5,103 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lollocraft Launcher</title>
     <style>
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .launcher { background: rgba(0,0,0,0.85); padding: 40px; border: 4px solid #555; width: 400px; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,1); border-radius: 10px; }
-        h1 { color: #55FF55; text-shadow: 3px 3px #003300; font-size: 3.5em; margin-bottom: 20px; letter-spacing: 2px; }
-        input { width: 90%; padding: 12px; margin: 10px 0; background: #333; border: 2px solid #555; color: white; font-size: 1.1em; border-radius: 5px; }
-        button { width: 100%; padding: 15px; margin: 10px 0; cursor: pointer; border: none; font-size: 1.2em; font-weight: bold; transition: 0.3s; border-radius: 5px; }
-        .btn-play { background: #3c8527; color: white; border-bottom: 4px solid #1a3d11; text-transform: uppercase; }
-        .btn-play:hover { background: #4caf50; transform: translateY(-2px); }
-        .btn-play:active { transform: translateY(2px); border-bottom: 0; }
-        .btn-logout { background: #aa0000; color: white; margin-top: 20px; font-size: 0.9em; }
-        .mode-selector { display: flex; gap: 10px; margin: 20px 0; }
-        .mode-btn { background: #444; color: #aaa; flex: 1; padding: 10px; border: 2px solid #222; cursor: pointer; font-weight: bold; }
-        .mode-btn.active { background: #888; color: white; border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        body { margin: 0; font-family: sans-serif; background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .launcher { background: rgba(0,0,0,0.9); padding: 40px; border: 4px solid #555; width: 350px; text-align: center; border-radius: 10px; }
+        h1 { color: #55FF55; text-shadow: 2px 2px #003300; font-size: 3em; margin-bottom: 20px; }
+        input { width: 90%; padding: 10px; margin: 10px 0; background: #333; border: 1px solid #555; color: white; }
+        button { width: 100%; padding: 15px; margin: 10px 0; cursor: pointer; border: none; font-weight: bold; font-size: 1.1em; border-radius: 5px; }
+        .btn-play { background: #3c8527; color: white; }
+        .btn-play:hover { background: #4caf50; }
         .hidden { display: none; }
-        p { color: #bbb; line-height: 1.5; }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="launcher">
         <h1>LOLLOCRAFT</h1>
-        <p>Inserisci i tuoi dati per iniziare l'avventura</p>
         <input type="email" id="email" placeholder="Email">
         <input type="password" id="password" placeholder="Password">
         <button class="btn-play" onclick="registerUser()">REGISTRATI ED ENTRA</button>
-        <p style="font-size: 0.8em; color: #666; margin-top: 15px;">Le credenziali sono salvate localmente nel browser.</p>
     </div>
 
     <div id="main-menu" class="launcher hidden">
         <h1>LOLLOCRAFT</h1>
-        <p>Benvenuto, <strong id="user-display" style="color: #55FF55;"></strong>!</p>
-        
-        <div class="mode-selector">
-            <button id="btn-survival" class="mode-btn" onclick="setMode('survival')">SURVIVAL</button>
-            <button id="btn-creative" class="mode-btn active" onclick="setMode('creative')">CREATIVE</button>
-        </div>
-
+        <p>Benvenuto!</p>
         <button class="btn-play" onclick="startGame()">AVVIA MONDO 3D</button>
-        <button class="btn-logout" onclick="logout()">ESCI DALL'ACCOUNT</button>
     </div>
 
     <script>
-        let currentMode = 'creative';
-
-        // Controlla se l'utente è già loggato all'apertura
-        window.onload = function() {
-            const savedUser = localStorage.getItem('lollocraft_user');
-            if (savedUser) {
-                showMenu(savedUser);
-            }
-        };
-
         function registerUser() {
             const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-
-            // Validazione semplice: la mail deve avere @ e la pass deve esistere
-            if (email.includes('@') && pass.length >= 4) {
-                localStorage.setItem('lollocraft_user', email);
-                showMenu(email);
+            if(email.includes('@')) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-menu').classList.remove('hidden');
             } else {
-                alert("Per favore, inserisci una email valida e una password di almeno 4 caratteri!");
+                alert("Inserisci una mail valida!");
             }
-        }
-
-        function showMenu(user) {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-menu').classList.remove('hidden');
-            document.getElementById('user-display').innerText = user;
-        }
-
-        function setMode(mode) {
-            currentMode = mode;
-            document.getElementById('btn-survival').classList.toggle('active', mode === 'survival');
-            document.getElementById('btn-creative').classList.toggle('active', mode === 'creative');
-        }
-
-        function logout() {
-            localStorage.removeItem('lollocraft_user');
-            location.reload();
         }
 
         function startGame() {
-            console.log("Avvio del gioco in modalità: " + currentMode);
             document.getElementById('main-menu').classList.add('hidden');
-            
-            // Carichiamo il file game.js che contiene il mondo 3D
+            // Caricamento del modulo game.js
             const script = document.createElement('script');
             script.type = 'module';
-            script.src = 'game.js';
+            script.src = './game.js'; // Assicurati che il file si chiami game.js
             document.body.appendChild(script);
-
-            // Messaggio di avvio
-            const loadingMsg = document.createElement('div');
-            loadingMsg.innerHTML = "<h2 style='color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);'>CARICAMENTO MONDO...</h2>";
-            document.body.appendChild(loadingMsg);
-            
-            setTimeout(() => { loadingMsg.remove(); }, 2000);
         }
     </script>
 </body>
