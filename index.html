@@ -2,73 +2,42 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Lollocraft - Java Edition</title>
+    <title>Lollocraft Java Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; background: url('https://www.minecraft.net/content/dam/games/minecraft/key-art/Java_Standard_KeyArt_1920x1080.jpg') no-repeat center center fixed; background-size: cover; font-family: 'Press Start 2P', cursive; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; text-shadow: 2px 2px #000; }
-        .launcher { background: rgba(0,0,0,0.85); padding: 40px; border: 4px solid #313131; width: 450px; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.7); border-radius: 8px; }
-        h1 { color: #55FF55; text-shadow: 4px 4px #000; font-size: 2.8em; margin-bottom: 30px; }
-        p { margin-bottom: 20px; font-size: 0.9em; }
-        input { width: 80%; padding: 15px; margin: 15px 0; background: #000; border: 2px solid #555; color: #fff; text-align: center; font-size: 1.5em; letter-spacing: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 18px; background: #3c8527; color: white; border: none; font-weight: bold; cursor: pointer; border-bottom: 5px solid #1a3d11; font-size: 1.2em; text-transform: uppercase; border-radius: 5px; margin-top: 10px; }
-        button:hover { background: #4caf50; border-bottom-color: #2e7d32; }
-        .hidden { display: none; }
-        #game-ui-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; font-family: 'Press Start 2P', cursive; }
-        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 24px; text-shadow: 1px 1px #000; }
-        #hotbar { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; background: rgba(0,0,0,0.6); border: 2px solid #4a4a4a; padding: 2px; }
-        .hotbar-slot { width: 48px; height: 48px; border: 2px solid #5a5a5a; background: rgba(255,255,255,0.1); display: flex; justify-content: center; align-items: center; font-size: 0.8em; }
-        .hotbar-slot.selected { border-color: white; }
-        #health-bar { position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); font-size: 1.5em; text-shadow: 1px 1px #000; }
-        #inventory-ui { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            width: 600px; height: 400px; background: url('https://i.imgur.com/kS5Yv9J.png') no-repeat center center; 
-            background-size: cover; display: none; z-index: 200; pointer-events: all;
-            border: 2px solid #222; /* Add border for visibility */
-        }
-        #inventory-slots { 
-            display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; 
-            width: 450px; margin: 0 auto; padding-top: 100px; /* Adjust padding to fit image */
-            padding-left: 25px; /* Adjust padding for inventory slots */
-        }
-        .inv-slot { width: 44px; height: 44px; border: 1px solid #555; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; font-size: 0.7em; color: white; }
+        body { margin: 0; background: #121212; font-family: 'Press Start 2P', cursive; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .launcher { background: rgba(0,0,0,0.9); padding: 40px; border: 4px solid #3c3c3c; width: 450px; text-align: center; box-shadow: 0 0 20px #000; }
+        h1 { color: #55FF55; text-shadow: 4px 4px #003300; font-size: 2em; margin-bottom: 30px; }
+        input { width: 80%; padding: 15px; margin-bottom: 20px; background: #000; border: 2px solid #555; color: #fff; text-align: center; font-size: 1.2em; }
+        .btn { width: 100%; padding: 20px; background: #3c8527; color: white; border: none; border-bottom: 4px solid #1a3d11; cursor: pointer; font-family: 'Press Start 2P'; font-size: 1em; }
+        .btn:hover { background: #4caf50; }
+        #gui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
+        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid white; border-radius: 2px; }
     </style>
 </head>
 <body>
-    <div id="login-screen" class="launcher">
+    <div id="login" class="launcher">
         <h1>LOLLOCRAFT</h1>
-        <p>ACCEDI AL MONDO CON IL TUO CODICE A 6 CIFRE:</p>
-        <input type="password" id="passcode" maxlength="6" placeholder="******">
-        <button onclick="checkCode()">ACCEDI E GIOCA</button>
+        <p>CODICE ACCESSO (6 CIFRE)</p>
+        <input type="password" id="code" maxlength="6" placeholder="******">
+        <button class="btn" onclick="entra()">GIOCA NEL MONDO</button>
     </div>
 
-    <div id="game-ui-container" class="hidden">
-        <div id="crosshair">+</div>
-        <div id="hotbar"></div>
-        <div id="health-bar"></div>
-    </div>
-
-    <div id="inventory-ui" class="hidden">
-        <div id="inventory-slots">
-            </div>
+    <div id="gui">
+        <div id="crosshair"></div>
     </div>
 
     <script>
-        // Funzione di accesso per simulare il salvataggio dei mondi
-        function checkCode() {
-            const code = document.getElementById('passcode').value;
-            if (code.length === 6) {
-                // Simuliamo il salvataggio del codice (potrebbe essere usato per caricare mondi diversi in futuro)
-                localStorage.setItem('lollocraft_user_code', code); 
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('game-ui-container').classList.remove('hidden');
-                // Carica il file game.js
-                const script = document.createElement('script');
-                script.type = 'module';
-                script.src = './game.js';
-                document.body.appendChild(script);
-            } else {
-                alert("Il codice deve essere di 6 cifre!");
-            }
+        function entra() {
+            const val = document.getElementById('code').value;
+            if(val.length === 6) {
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('gui').style.display = 'block';
+                const s = document.createElement('script');
+                s.type = 'module';
+                s.src = './game.js';
+                document.body.appendChild(s);
+            } else { alert("Codice non valido!"); }
         }
     </script>
 </body>
