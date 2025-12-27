@@ -12,48 +12,45 @@ const controls = new PointerLockControls(camera, document.body);
 document.addEventListener('click', () => controls.lock());
 
 // LUCI
-scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+const light = new THREE.AmbientLight(0xffffff, 0.9);
+scene.add(light);
 
-// FISICA E MOVIMENTO
-let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false, canJump = false;
-const velocity = new THREE.Vector3();
-const direction = new THREE.Vector3();
+// FISICA E MOVIMENTO (WASD + SALTO)
+let moveF = false, moveB = false, moveL = false, moveR = false, canJump = false;
+const vel = new THREE.Vector3();
+document.addEventListener('keydown', (e) => {
+    if(e.code === 'KeyW') moveF = true;
+    if(e.code === 'KeyS') moveB = true;
+    if(e.code === 'KeyA') moveL = true;
+    if(e.code === 'KeyD') moveR = true;
+    if(e.code === 'Space' && canJump) { vel.y += 5; canJump = false; }
+});
+document.addEventListener('keyup', (e) => {
+    if(e.code === 'KeyW') moveF = false;
+    if(e.code === 'KeyS') moveB = false;
+    if(e.code === 'KeyA') moveL = false;
+    if(e.code === 'KeyD') moveR = false;
+});
 
-const onKeyDown = (e) => {
-    switch(e.code) {
-        case 'KeyW': moveForward = true; break;
-        case 'KeyS': moveBackward = true; break;
-        case 'KeyA': moveLeft = true; break;
-        case 'KeyD': moveRight = true; break;
-        case 'Space': if(canJump) velocity.y += 5; canJump = false; break;
-    }
-};
-const onKeyUp = (e) => {
-    switch(e.code) {
-        case 'KeyW': moveForward = false; break;
-        case 'KeyS': moveBackward = false; break;
-        case 'KeyA': moveLeft = false; break;
-        case 'KeyD': moveRight = false; break;
-    }
-};
-document.addEventListener('keydown', onKeyDown);
-document.addEventListener('keyup', onKeyUp);
-
-// GENERAZIONE MONDO A STRATI
+// GENERAZIONE MONDO A STRATI (Erba, Terra, Pietra, Minerali)
 const blocks = [];
 const geo = new THREE.BoxGeometry(1, 1, 1);
-const matErba = new THREE.MeshStandardMaterial({ color: 0x3c8527 });
-const matTerra = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
-const matPietra = new THREE.MeshStandardMaterial({ color: 0x808080 });
+const mats = {
+    erba: new THREE.MeshLambertMaterial({ color: 0x3c8527 }),
+    terra: new THREE.MeshLambertMaterial({ color: 0x8b4513 }),
+    pietra: new THREE.MeshLambertMaterial({ color: 0x808080 }),
+    oro: new THREE.MeshLambertMaterial({ color: 0xffd700 })
+};
 
-for (let x = -8; x < 8; x++) {
-    for (let z = -8; z < 8; z++) {
-        for (let y = 0; y > -5; y--) {
-            let mat = matPietra;
-            if(y === 0) mat = matErba;
-            else if(y > -3) mat = matTerra;
-            
-            const block = new THREE.Mesh(geo, mat);
+for (let x = -10; x < 10; x++) {
+    for (let z = -10; z < 10; z++) {
+        for (let y = 0; y > -8; y--) {
+            let type = mats.pietra;
+            if (y === 0) type = mats.erba;
+            else if (y > -3) type = mats.terra;
+            else if (Math.random() < 0.05) type = mats.oro; // Minerali rari
+
+            const block = new THREE.Mesh(geo, type);
             block.position.set(x, y, z);
             scene.add(block);
             blocks.push(block);
@@ -61,51 +58,44 @@ for (let x = -8; x < 8; x++) {
     }
 }
 
-// ROMPERE I BLOCCHI
-const raycaster = new THREE.Raycaster();
+// ROMPERE I BLOCCHI (Tasto sinistro)
+const ray = new THREE.Raycaster();
 window.addEventListener('mousedown', (e) => {
     if(e.button === 0 && controls.isLocked) {
-        raycaster.setFromCamera(new THREE.Vector2(0,0), camera);
-        const intersects = raycaster.intersectObjects(blocks);
-        if(intersects.length > 0) {
-            const obj = intersects[0].object;
-            scene.remove(obj);
-            blocks.splice(blocks.indexOf(obj), 1);
+        ray.setFromCamera(new THREE.Vector2(0,0), camera);
+        const inter = ray.intersectObjects(blocks);
+        if(inter.length > 0) {
+            scene.remove(inter[0].object);
+            blocks.splice(blocks.indexOf(inter[0].object), 1);
         }
     }
 });
 
 camera.position.set(0, 2, 5);
+let prevTime = performance.now();
 
 function animate() {
     requestAnimationFrame(animate);
     if(controls.isLocked) {
         const time = performance.now();
         const delta = (time - prevTime) / 1000;
+        
+        vel.x -= vel.x * 10.0 * delta;
+        vel.z -= vel.z * 10.0 * delta;
+        vel.y -= 9.8 * 2.0 * delta; // Gravità
 
-        velocity.x -= velocity.x * 10.0 * delta;
-        velocity.z -= velocity.z * 10.0 * delta;
-        velocity.y -= 9.8 * 2.0 * delta; // Gravità
+        if (moveF) vel.z -= 100.0 * delta;
+        if (moveB) vel.z += 100.0 * delta;
+        if (moveL) vel.x -= 100.0 * delta;
+        if (moveR) vel.x += 100.0 * delta;
 
-        direction.z = Number(moveForward) - Number(moveBackward);
-        direction.x = Number(moveRight) - Number(moveLeft);
-        direction.normalize();
+        controls.moveRight(-vel.x * delta);
+        controls.moveForward(-vel.z * delta);
+        camera.position.y += vel.y * delta;
 
-        if (moveForward || moveBackward) velocity.z -= direction.z * 100.0 * delta;
-        if (moveLeft || moveRight) velocity.x -= direction.x * 100.0 * delta;
-
-        controls.moveRight(-velocity.x * delta);
-        controls.moveForward(-velocity.z * delta);
-        camera.position.y += (velocity.y * delta);
-
-        if (camera.position.y < 2) {
-            velocity.y = 0;
-            camera.position.y = 2;
-            canJump = true;
-        }
+        if (camera.position.y < 2) { camera.position.y = 2; vel.y = 0; canJump = true; }
         prevTime = time;
     }
     renderer.render(scene, camera);
 }
-let prevTime = performance.now();
 animate();
