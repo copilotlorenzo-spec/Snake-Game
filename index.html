@@ -1,76 +1,31 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <title>Lollocraft Java Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <style>
-        body { margin: 0; background: #121212; font-family: 'Press Start 2P', cursive; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .launcher { background: rgba(0,0,0,0.9); padding: 40px; border: 4px solid #3c3c3c; width: 450px; text-align: center; box-shadow: 0 0 20px #000; }
-        h1 { color: #55FF55; text-shadow: 4px 4px #003300; font-size: 2em; margin-bottom: 30px; }
-        input { width: 80%; padding: 15px; margin-bottom: 20px; background: #000; border: 2px solid #555; color: #fff; text-align: center; font-size: 1.2em; }
-        .btn { width: 100%; padding: 20px; background: #3c8527; color: white; border: none; border-bottom: 4px solid #1a3d11; cursor: pointer; font-family: 'Press Start 2P'; font-size: 1em; }
-        .btn:hover { background: #4caf50; }
-        #gui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
-        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid white; border-radius: 2px; }
-        
-        /* Barra di caricamento */
-        #loading-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 1000;
-        }
-        #loading-bar-container { width: 50%; height: 20px; background: #333; border: 2px solid #555; margin-top: 20px; }
-        #loading-bar { width: 0%; height: 100%; background: #55FF55; transition: width 0.1s linear; }
-        #loading-text { margin-top: 10px; font-size: 0.8em; color: #aaa; }
-    </style>
-</head>
-<body>
-    <div id="login" class="launcher">
-        <h1>LOLLOCRAFT</h1>
-        <p>CODICE ACCESSO (6 CIFRE)</p>
-        <input type="password" id="code" maxlength="6" placeholder="******">
-        <button class="btn" onclick="entra()">GIOCA NEL MONDO</button>
-    </div>
-
-    <div id="loading-screen" class="hidden">
-        <h1>CARICAMENTO MONDO...</h1>
-        <div id="loading-bar-container">
-            <div id="loading-bar"></div>
-        </div>
-        <p id="loading-text">Generazione del terreno (0%)</p>
-    </div>
-
-    <div id="gui">
-        <div id="crosshair"></div>
-    </div>
-
-    <script>
-        function entra() {
-            const val = document.getElementById('code').value;
-            if(val.length === 6) {
-                document.getElementById('login').style.display = 'none';
-                document.getElementById('loading-screen').classList.remove('hidden'); // Mostra caricamento
-                
+<script>
+    function entra() {
+        const val = document.getElementById('code').value;
+        if(val.length === 6) {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('loading-screen').style.display = 'flex';
+            
+            // Diamo tempo al browser di mostrare la barra prima di caricare il motore pesante
+            setTimeout(() => {
                 const s = document.createElement('script');
                 s.type = 'module';
                 s.src = './game.js';
                 document.body.appendChild(s);
-            } else { alert("Codice non valido!"); }
-        }
+            }, 500);
+        } else { alert("Codice non valido!"); }
+    }
 
-        // Funzione per aggiornare la barra di caricamento (chiamata da game.js)
-        window.updateLoadingBar = function(progress, text) {
-            const bar = document.getElementById('loading-bar');
-            const txt = document.getElementById('loading-text');
-            bar.style.width = progress + '%';
-            txt.innerText = text;
+    window.updateLoadingBar = function(progress, text) {
+        const bar = document.getElementById('loading-bar');
+        const txt = document.getElementById('loading-text');
+        if(bar) bar.style.width = progress + '%';
+        if(txt) txt.innerText = text;
 
-            if (progress >= 100) {
-                document.getElementById('loading-screen').classList.add('hidden');
+        if (progress >= 100) {
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
                 document.getElementById('gui').style.display = 'block';
-            }
-        };
-    </script>
-</body>
-</html>
+            }, 500);
+        }
+    };
+</script>
