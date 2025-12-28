@@ -13,6 +13,16 @@
         .btn:hover { background: #4caf50; }
         #gui { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
         #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid white; border-radius: 2px; }
+        
+        /* Barra di caricamento */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+        #loading-bar-container { width: 50%; height: 20px; background: #333; border: 2px solid #555; margin-top: 20px; }
+        #loading-bar { width: 0%; height: 100%; background: #55FF55; transition: width 0.1s linear; }
+        #loading-text { margin-top: 10px; font-size: 0.8em; color: #aaa; }
     </style>
 </head>
 <body>
@@ -21,6 +31,14 @@
         <p>CODICE ACCESSO (6 CIFRE)</p>
         <input type="password" id="code" maxlength="6" placeholder="******">
         <button class="btn" onclick="entra()">GIOCA NEL MONDO</button>
+    </div>
+
+    <div id="loading-screen" class="hidden">
+        <h1>CARICAMENTO MONDO...</h1>
+        <div id="loading-bar-container">
+            <div id="loading-bar"></div>
+        </div>
+        <p id="loading-text">Generazione del terreno (0%)</p>
     </div>
 
     <div id="gui">
@@ -32,13 +50,27 @@
             const val = document.getElementById('code').value;
             if(val.length === 6) {
                 document.getElementById('login').style.display = 'none';
-                document.getElementById('gui').style.display = 'block';
+                document.getElementById('loading-screen').classList.remove('hidden'); // Mostra caricamento
+                
                 const s = document.createElement('script');
                 s.type = 'module';
                 s.src = './game.js';
                 document.body.appendChild(s);
             } else { alert("Codice non valido!"); }
         }
+
+        // Funzione per aggiornare la barra di caricamento (chiamata da game.js)
+        window.updateLoadingBar = function(progress, text) {
+            const bar = document.getElementById('loading-bar');
+            const txt = document.getElementById('loading-text');
+            bar.style.width = progress + '%';
+            txt.innerText = text;
+
+            if (progress >= 100) {
+                document.getElementById('loading-screen').classList.add('hidden');
+                document.getElementById('gui').style.display = 'block';
+            }
+        };
     </script>
 </body>
 </html>
